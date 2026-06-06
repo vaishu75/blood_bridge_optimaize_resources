@@ -1,0 +1,54 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<div class="py-20">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="glass-card rounded-[2rem] border border-slate-800 p-10 shadow-soft">
+            <div class="text-center">
+                <h2 class="text-3xl font-extrabold text-white">Register as a Donor</h2>
+                <p class="mt-3 text-slate-400">Join our community of blood donors and help save lives.</p>
+            </div>
+            <div class="mt-12">
+                <form action="{{ url_for('auth.register', user_type='donor') }}" method="POST" class="space-y-6">
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="first_name" class="block text-sm font-semibold text-slate-200 mb-2">First Name</label>
+                            <input type="text" name="first_name" id="first_name" required class="block w-full rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="last_name" class="block text-sm font-semibold text-slate-200 mb-2">Last Name</label>
+                            <input type="text" name="last_name" id="last_name" required class="block w-full rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 sm:text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-semibold text-slate-200 mb-2">Email</label>
+                        <input type="email" name="email" id="email" required class="block w-full rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 sm:text-sm">
+                    </div>
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="password" class="block text-sm font-semibold text-slate-200 mb-2">Password</label>
+                            <input type="password" name="password" id="password" required class="block w-full rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="confirm_password" class="block text-sm font-semibold text-slate-200 mb-2">Confirm Password</label>
+                            <input type="password" name="confirm_password" id="confirm_password" required class="block w-full rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 sm:text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="blood_type" class="block text-sm font-semibold text-slate-200 mb-2">Blood Type</label>
+                        <select id="blood_type" name="blood_type" required class="block w-full rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 sm:text-sm">
+                            <option value="">Select blood type</option>
+                            {% for blood_type in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                            <option value="{{ blood_type }}">{{ blood_type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full rounded-full bg-gradient-to-r from-fuchsia-500 to-orange-400 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-fuchsia-500/20 hover:opacity-95">Register</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

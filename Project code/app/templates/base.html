@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeLink - Blood Donation Management System</title>
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        [x-cloak] { display: none !important; }
+
+        body {
+            min-height: 100vh;
+            color: #e2e8f0;
+            background: radial-gradient(circle at top right, rgba(251,146,60,0.14), transparent 24%), linear-gradient(180deg, #050816 0%, #10182f 42%, #141a2e 100%);
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.94);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            backdrop-filter: blur(16px);
+        }
+
+        .hero-spot {
+            background: radial-gradient(circle at top, rgba(251, 113, 133, 0.35), transparent 32%);
+        }
+
+        .btn-gradient {
+            background-image: linear-gradient(90deg, #fb7185 0%, #f59e0b 100%);
+        }
+
+        .btn-gradient:hover {
+            opacity: 0.96;
+        }
+
+        .shadow-soft {
+            box-shadow: 0 24px 80px rgba(15, 23, 42, 0.24);
+        }
+
+        .flash-success {
+            background: rgba(52, 211, 153, 0.12);
+            border-color: rgba(52, 211, 153, 0.25);
+            color: #a7f3d0;
+        }
+
+        .flash-error {
+            background: rgba(248, 113, 113, 0.12);
+            border-color: rgba(248, 113, 113, 0.25);
+            color: #fecaca;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100 antialiased">
+    <!-- Navigation -->
+    <nav class="bg-slate-950/95 border-b border-slate-800 shadow-soft" x-data="{ open: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-10">
+                    <a href="{{ url_for('main.index') }}" class="inline-flex items-center gap-3 text-white">
+                        <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-500 to-orange-400 text-lg font-bold shadow-lg shadow-fuchsia-500/20">LL</span>
+                        <div>
+                            <div class="text-xl font-semibold">LifeLink</div>
+                            <div class="text-xs uppercase tracking-[0.24em] text-slate-400">Connected donors & hospitals</div>
+                        </div>
+                    </a>
+                    <div class="hidden lg:flex lg:items-center lg:space-x-8">
+                        <a href="{{ url_for('main.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {% if request.endpoint == 'main.index' %}border-amber-400 text-white{% else %}border-transparent text-slate-300 hover:border-amber-400 hover:text-white{% endif %}">Home</a>
+                        <a href="{{ url_for('main.blood_inventory') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {% if request.endpoint == 'main.blood_inventory' %}border-amber-400 text-white{% else %}border-transparent text-slate-300 hover:border-amber-400 hover:text-white{% endif %}">Blood Inventory</a>
+                        <a href="{{ url_for('main.blood_drives') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {% if request.endpoint == 'main.blood_drives' %}border-amber-400 text-white{% else %}border-transparent text-slate-300 hover:border-amber-400 hover:text-white{% endif %}">Blood Drives</a>
+                        {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('main.emergency_requests') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {% if request.endpoint == 'main.emergency_requests' %}border-amber-400 text-white{% else %}border-transparent text-slate-300 hover:border-amber-400 hover:text-white{% endif %}">Emergency Requests</a>
+                        {% endif %}
+                        {% if current_user.is_authenticated and current_user.user_type == 'donor' %}
+                        <a href="{{ url_for('main.donate') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {% if request.endpoint == 'main.donate' %}border-amber-400 text-white{% else %}border-transparent text-slate-300 hover:border-amber-400 hover:text-white{% endif %}">Donate</a>
+                        {% endif %}
+                        {% if current_user.is_authenticated and current_user.user_type == 'admin' %}
+                        <a href="{{ url_for('main.dashboard') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {% if request.endpoint == 'main.dashboard' %}border-amber-400 text-white{% else %}border-transparent text-slate-300 hover:border-amber-400 hover:text-white{% endif %}">Dashboard</a>
+                        {% endif %}
+                        {% if not current_user.is_authenticated or current_user.user_type != 'admin' %}
+                        <a href="{{ url_for('main.about') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {% if request.endpoint == 'main.about' %}border-amber-400 text-white{% else %}border-transparent text-slate-300 hover:border-amber-400 hover:text-white{% endif %}">About</a>
+                        <a href="{{ url_for('main.contact') }}" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium {% if request.endpoint == 'main.contact' %}border-amber-400 text-white{% else %}border-transparent text-slate-300 hover:border-amber-400 hover:text-white{% endif %}">Contact</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="hidden lg:flex lg:items-center lg:space-x-4">
+                    {% if current_user.is_authenticated %}
+                    <div x-data="{ open: false }" @click.away="open = false" class="relative">
+                        <button @click="open = !open" type="button" class="inline-flex items-center gap-3 rounded-full border border-slate-700 bg-slate-950 px-3 py-2 text-sm font-medium text-slate-100 shadow-sm hover:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                            <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name={{ current_user.first_name }}+{{ current_user.last_name }}&background=random" alt="Profile">
+                            <span>{{ current_user.first_name }} {{ current_user.last_name }}</span>
+                        </button>
+                        <div x-show="open" x-transition class="absolute right-0 mt-2 w-48 rounded-2xl bg-slate-950 border border-slate-800 shadow-soft py-1">
+                            <a href="{{ url_for('main.dashboard') }}" class="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-900">Dashboard</a>
+                            <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-900">Logout</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="text-slate-300 hover:text-white text-sm font-medium">Sign in</a>
+                    <a href="{{ url_for('auth.register', user_type='donor') }}" class="inline-flex items-center rounded-full bg-gradient-to-r from-fuchsia-500 to-orange-400 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-fuchsia-500/20 hover:opacity-95">Register</a>
+                    {% endif %}
+                </div>
+                <div class="-mr-2 flex items-center lg:hidden">
+                    <button @click="open = !open" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="h-6 w-6" x-show="!open" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg class="h-6 w-6" x-show="open" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sm:hidden" id="mobile-menu" x-show="open" x-cloak>
+            <div class="space-y-1 px-2 pb-3 pt-2">
+                <a href="{{ url_for('main.index') }}" class="block rounded-lg px-3 py-2 text-base font-medium {% if request.endpoint == 'main.index' %}bg-slate-900 text-white{% else %}text-slate-300 hover:bg-slate-900 hover:text-white{% endif %}">Home</a>
+                <a href="{{ url_for('main.blood_inventory') }}" class="block rounded-lg px-3 py-2 text-base font-medium {% if request.endpoint == 'main.blood_inventory' %}bg-slate-900 text-white{% else %}text-slate-300 hover:bg-slate-900 hover:text-white{% endif %}">Blood Inventory</a>
+                <a href="{{ url_for('main.blood_drives') }}" class="block rounded-lg px-3 py-2 text-base font-medium {% if request.endpoint == 'main.blood_drives' %}bg-slate-900 text-white{% else %}text-slate-300 hover:bg-slate-900 hover:text-white{% endif %}">Blood Drives</a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.emergency_requests') }}" class="block rounded-lg px-3 py-2 text-base font-medium {% if request.endpoint == 'main.emergency_requests' %}bg-slate-900 text-white{% else %}text-slate-300 hover:bg-slate-900 hover:text-white{% endif %}">Emergency Requests</a>
+                {% endif %}
+                {% if current_user.is_authenticated and current_user.user_type == 'donor' %}
+                <a href="{{ url_for('main.donate') }}" class="block rounded-lg px-3 py-2 text-base font-medium {% if request.endpoint == 'main.donate' %}bg-slate-900 text-white{% else %}text-slate-300 hover:bg-slate-900 hover:text-white{% endif %}">Donate</a>
+                {% endif %}
+                {% if current_user.is_authenticated and current_user.user_type == 'admin' %}
+                <a href="{{ url_for('main.dashboard') }}" class="block rounded-lg px-3 py-2 text-base font-medium {% if request.endpoint == 'main.dashboard' %}bg-slate-900 text-white{% else %}text-slate-300 hover:bg-slate-900 hover:text-white{% endif %}">Dashboard</a>
+                {% endif %}
+                {% if not current_user.is_authenticated or current_user.user_type != 'admin' %}
+                <a href="{{ url_for('main.about') }}" class="block rounded-lg px-3 py-2 text-base font-medium {% if request.endpoint == 'main.about' %}bg-slate-900 text-white{% else %}text-slate-300 hover:bg-slate-900 hover:text-white{% endif %}">About</a>
+                <a href="{{ url_for('main.contact') }}" class="block rounded-lg px-3 py-2 text-base font-medium {% if request.endpoint == 'main.contact' %}bg-slate-900 text-white{% else %}text-slate-300 hover:bg-slate-900 hover:text-white{% endif %}">Contact</a>
+                {% endif %}
+            </div>
+            <div class="border-t border-slate-800 px-5 py-4">
+                {% if current_user.is_authenticated %}
+                <div class="flex items-center gap-3 text-slate-200">
+                    <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ current_user.first_name }}+{{ current_user.last_name }}&background=random" alt="Profile">
+                    <div>
+                        <div class="font-semibold">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                        <div class="text-sm text-slate-400">{{ current_user.email }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="space-y-2">
+                    <a href="{{ url_for('auth.login') }}" class="block rounded-lg px-4 py-2 text-base font-medium text-slate-300 hover:bg-slate-900 hover:text-white">Sign in</a>
+                    <a href="{{ url_for('auth.register', user_type='donor') }}" class="block rounded-lg bg-gradient-to-r from-fuchsia-500 to-orange-400 px-4 py-2 text-base font-medium text-white text-center">Register</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                {% for category, message in messages %}
+                    <div class="rounded-3xl p-4 mb-4 border {% if category == 'error' %}flash-error{% else %}flash-success{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="pt-16 pb-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid gap-12 lg:grid-cols-3">
+                <div>
+                    <h3 class="text-2xl font-semibold text-white">LifeLink</h3>
+                    <p class="mt-4 text-slate-400 max-w-md">A modern blood donation hub that brings donors, hospitals, and blood banks together with clarity, speed, and compassion.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white">Quick Links</h4>
+                    <ul class="mt-4 space-y-3 text-slate-300">
+                        <li><a href="{{ url_for('main.index') }}" class="hover:text-white">Home</a></li>
+                        <li><a href="{{ url_for('main.blood_inventory') }}" class="hover:text-white">Blood Inventory</a></li>
+                        <li><a href="{{ url_for('main.blood_drives') }}" class="hover:text-white">Blood Drives</a></li>
+                        <li><a href="{{ url_for('main.contact') }}" class="hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white">Get in Touch</h4>
+                    <p class="mt-4 text-slate-300">Email: <a href="mailto:support@lifelink.com" class="text-amber-300 hover:text-white">support@lifelink.com</a></p>
+                    <p class="mt-2 text-slate-300">Phone: <span class="text-white">+1 (555) 123-4567</span></p>
+                    <div class="mt-6 flex flex-wrap gap-4 text-slate-300">
+                        <a href="#" class="hover:text-white">Facebook</a>
+                        <a href="#" class="hover:text-white">Instagram</a>
+                        <a href="#" class="hover:text-white">Twitter</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 border-t border-slate-800 pt-6 text-sm text-slate-500 text-center">
+                &copy; 2025 LifeLink. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
